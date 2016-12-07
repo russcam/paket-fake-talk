@@ -1,0 +1,675 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Fake it to Make it</title>
+    <meta name="description" content="Fake it to Make it">
+    <meta name="author" content="Russ Cam">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/forloop.css" id="theme">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+    <div class="reveal">
+
+        <div class='footer'>
+ 
+        </div>
+
+           <div class="footer-left"><img src="images/elastic-logo-H-full-color-reverse.png" style="height: 19.64px; width: 57.18px; vertical-align: middle; margin-bottom: 13px;" /></div>
+            <div class="footer-site"><span>Fake it to Make it</span></div>
+            <div class="footer-middle"><img src="images/pagenumber.png"></div>
+            <div class="footer-copy"><span><a href="http://twitter.com/forloop">@forloop</a></span></div>
+            <hr class="footer-left">
+            <hr class="footer-right">
+
+        <div class="slides">
+
+            <section id="intro">
+                <h1>Fake it to Make it</h1>
+                <p>Dependency Management and Build Automation    
+                </p>
+                <h2>with Paket and Fake</h2>
+                <p>
+                    <small>Russ Cam</small>
+                    <small><a href="http://twitter.com/forloop">@forloop</a></small>
+                </p>
+            </section>
+
+            <section id="about-me">
+                <h2>About me</h2>
+                <ul>
+                    <li>Software Engineer at <img src="images/elastic-logo-H-full-color-reverse.png" style="height: 20%; width: 20%; vertical-align: middle;" /></li>
+                    <li>
+                        Interested in
+                        <ul>
+                            <li>Distributed systems</li>
+                            <li>Cloud computing</li>
+                            <li>Message-driven architectures</li>
+                            <li>Software Design, Patterns and Practices</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Say Hi!
+                        <ul>
+                            <li><a href="http://twitter.com/forloop" target="_blank">@forloop</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="in-the-beginning">
+                <section id="libs-directory">
+                    <h2>In the days before NuGet</h2>
+                    <img src="images/manila-folder.png" />
+                    <p>~/libs directory</p>
+
+                    <aside class="notes">
+                        <ul>
+                            <li>Every project had a libs folder</li>
+                            <li>Download third party DLLs from Sourceforge, etc.</li>
+                        </ul>
+                    </aside>
+                </section>
+
+                <section id="along-came-nuget">
+                    <h2>NuGet made referencing a breeze</h2>
+                    <img src="images/nuget-packages.png" />
+                </section>
+
+                <section id="old-problems-new-clothing">
+                    <h2>NuGet Hell is the new DLL Hell</h2>
+                    <img src="images/nuget-hell.png" />
+                </section>
+            </section>
+
+            <section id="introduction-to-paket">
+                <section id="what-is-paket">
+                    <h2>Paket</h2>
+					<img src="images/paket-logo.png" />
+                    <h3>Dependency Manager for .NET and Mono</h3>		
+                    <blockquote cite="https://fsprojects.github.io/Paket/index.html">
+                        <p>
+                            ..<strong>designed to work well with NuGet packages</strong> and also enables referencing files 
+							directly from Git repositories or any HTTP resource. 
+							It enables <strong>precise and predictable control</strong> over what packages the projects 
+							within your application reference.
+                        </p>
+                    </blockquote>
+                    <aside class="notes">
+                        <ul>
+							<li></li>
+                        </ul>
+                    </aside>
+                </section>
+            </section>
+
+            <section> 	
+                <section id="paket-components">
+                    <h2>Main Components</h2>
+                    <ul>
+                        <li>paket.exe</li>
+                        <li>paket.dependencies</li>
+                        <li>paket.lock</li>
+                        <li>paket.references</li>
+                    </ul>
+                </section>
+
+                <section id="paket-exe">
+                    <h2><code>paket.exe</code></h2>
+                    <p>in ~/.paket directory in root</p>
+                    <pre><code data-trim>
+.paket\paket.exe --help
+
+add &lt;options&gt;        Adds a new package to your paket.dependencies file
+find-refs &lt;options&gt;  Finds all project files with package installed
+init &lt;options&gt;       Creates an empty paket.dependencies in working directory
+install &lt;options&gt;    Download the dependencies in paket.dependencies or paket.lock
+outdated &lt;options&gt;   Lists all dependencies that have newer versions available
+remove &lt;options&gt;     Removes package from paket.dependencies and paket.references
+restore &lt;options&gt;    Download the dependencies in paket.lock
+update &lt;options&gt;     Update one or all dependencies
+                    </code></pre>
+
+                    <aside class="notes">
+                        <ul>    
+                            <li>use paket.bootstrapper.exe to get the latest</li>
+                        </ul>
+                    </aside>
+                </section>
+
+				<section id="paket-dependencies">
+					<h2>paket.dependencies</h2>
+                    <p>In solution root</p>
+					<pre><code data-trim>
+source https://www.nuget.org/api/v2
+nuget Newtonsoft.Json 
+
+source https://api.nuget.org/v3/index.json
+nuget AsciiDocNet
+
+group build
+    source https://www.nuget.org/api/v2
+    nuget FAKE
+    nuget FSharp.Data
+    nuget GitLink prerelease
+
+    source https://www.myget.org/F/xunit/
+    nuget xunit.runner.console 2.2.0-beta3-build3330
+					</code></pre>
+                </section>
+
+                <section id="paket-lock">
+                    <h2>paket.lock</h2>
+                    <p>Generated from <code>paket install</code><p>
+					<pre><code data-trim>
+NUGET
+  remote: https://www.nuget.org/api/v2
+    AsciiDocNet (1.0.0-alpha3)
+    Bogus (7.1.6)
+      NETStandard.Library (>= 1.6) - framework: >= netstandard13
+      Newtonsoft.Json (>= 9.0.1) - framework: >= net40, >= netstandard13
+      System.Linq (>= 4.1) - framework: >= netstandard13
+      System.Linq.Expressions (>= 4.1) - framework: >= netstandard13
+      System.Reflection (>= 4.1) - framework: >= netstandard13
+      System.Reflection.TypeExtensions (>= 4.1) - framework: >= netstandard13
+    CsQuery (1.3.4)
+    DiffPlex (1.2.1)
+    FluentAssertions (4.13)
+      NETStandard.Library (>= 1.6) - framework: >= netstandard13
+      System.Reflection.TypeExtensions (>= 4.1) - framework: >= netstandard13
+					</code></pre>               
+                </section>
+				
+				<section id="paket-references">
+					<h2>paket.references</h2>
+                    <p>In each project</p>
+					<pre><code data-trim>
+FluentAssertions
+Newtonsoft.Json
+xunit
+xunit.abstractions
+System.Reactive
+Bogus
+DiffPlex
+SemanticVersioning
+					</code></pre>
+                </section>
+            </section>
+
+            <section id="why-use-paket">
+                <h2>Why Paket?</h2>
+            </section>
+
+            <section id="predictable-control">
+                <h2>Predictable control over references</h2>     
+                <section id="nuget-references-section">
+                    <h3>with NuGet</h3>
+                    <pre><code class="xml" data-trim>
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;packages&gt;
+&lt;package id=&quot;Elasticsearch.Net&quot; version=&quot;1.9.0&quot; targetFramework=&quot;net40&quot; /&gt;
+&lt;package id=&quot;GeoAPI&quot; version=&quot;1.7.4&quot; targetFramework=&quot;net40&quot; /&gt;
+&lt;package id=&quot;NEST&quot; version=&quot;1.9.0&quot; targetFramework=&quot;net40&quot; /&gt;
+&lt;package id=&quot;NetTopologySuite&quot; version=&quot;1.14&quot; targetFramework=&quot;net40&quot; /&gt;
+&lt;package id=&quot;NetTopologySuite.IO.GeoJSON&quot; version=&quot;1.14&quot; targetFramework=&quot;net40&quot; /&gt;
+&lt;package id=&quot;Newtonsoft.Json&quot; version=&quot;9.0.1&quot; targetFramework=&quot;net40&quot; /&gt;
+&lt;/packages&gt;
+                    </code></pre>
+                    <aside class="notes">
+                        <ul>
+                            <li>Version numbers burnt into every package.config in every project. 
+                                Upgrading packages globally across projects can be painful</li>
+                            <li>NuGet makes no separation for transitive dependencies i.e. 
+                                those dependencies that the packages you use are dependent on but are not directly depended upon.</li>
+                        </ul>
+                    </aside>
+                </section>
+
+                <section id="paket-references-section">
+                    <h3>with Paket</h3>
+                    <pre><code data-trim>
+NEST
+NetTopologySuite.IO.GeoJSON
+                    </code></pre>					
+                </section>
+            </section>
+
+					
+            <section id="multiple-sources">
+                <h2>Reference multiple sources</h2>
+                
+                <section id="nuget">
+                    <img src="images/nuget-logo.png" style="margin-top: 50px; width:60%; height:60%;" />
+                </section>
+
+                <section id="myget">
+                    <img src="images/myget-logo.png" />
+                </section>
+
+                <section id="github">
+                    <img src="images/github-logo.png" style="width:60%; height:60%;"  />
+                </section>
+
+                <section id="own-provider">
+                    <ul>
+                        <li>Own NuGet server</li>
+                        <li>Any HTTP resource</li>
+                    </ul>
+                </section>
+
+                <aside class="notes">
+                    <ul>
+                    </ul>
+                </aside>
+            </section>
+
+            <section id="multiple-versions">
+                <h2>Multiple versions</h2>
+                <section id="same-dependency">
+                <h3>Same dependency</h3>
+                    <pre><code class="" data-trim>
+source https://www.nuget.org/api/v2
+nuget Newtonsoft.Json 
+
+group legacy
+    source https://www.nuget.org/api/v2
+    nuget Newtonsoft.Json 6.0.0
+                    </code></pre>
+
+                    <aside class="notes">
+                        <ul>
+                            <li>Auxillary projects</li>
+                        </ul>
+                    </aside>
+                </section>
+                <section id="multiple-frameworks">
+                    <h3>Different framework versions</h3>
+                    <pre><code class="xml" data-trim>
+ &lt;Choose&gt;
+    &lt;When Condition=&quot;$(TargetFrameworkIdentifier) == &#39;.NETFramework&#39; And ($(TargetFrameworkVersion) == &#39;v2.0&#39; Or $(TargetFrameworkVersion) == &#39;v3.0&#39;)&quot;&gt;
+      &lt;ItemGroup&gt;
+        &lt;Reference Include=&quot;Newtonsoft.Json&quot;&gt;
+          &lt;HintPath&gt;..\..\packages\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll&lt;/HintPath&gt;
+          &lt;Private&gt;True&lt;/Private&gt;
+          &lt;Paket&gt;True&lt;/Paket&gt;
+        &lt;/Reference&gt;
+      &lt;/ItemGroup&gt;
+    &lt;/When&gt;
+    &lt;When Condition=&quot;$(TargetFrameworkIdentifier) == &#39;.NETFramework&#39; And $(TargetFrameworkVersion) == &#39;v3.5&#39;&quot;&gt;
+      &lt;ItemGroup&gt;
+        &lt;Reference Include=&quot;Newtonsoft.Json&quot;&gt;
+          &lt;HintPath&gt;..\..\packages\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll&lt;/HintPath&gt;
+          &lt;Private&gt;True&lt;/Private&gt;
+          &lt;Paket&gt;True&lt;/Paket&gt;
+        &lt;/Reference&gt;
+      &lt;/ItemGroup&gt;
+    &lt;/When&gt;
+&lt;/Choose&gt;
+                    </code></pre>
+                    <aside class="notes">
+                        <ul>
+                        </ul>
+                    </aside>
+                </section>
+
+                <aside class="notes">
+                    <ul>
+                    </ul>
+                </aside>
+            </section>
+
+            <section id="delisted-packages">
+                <h2>Flagging Delisted packages</h2>
+                <section>
+                    <pre><code class="fsharp" data-trim>
+let leftpad s n c =
+    let l = s |> String.length
+    let c' = match c with 
+    | None -> "." 
+    | Some v -> v
+    match l <= n with
+        | true -> String.replicate (n-l) c' + s
+        | false -> s
+                    </code></pre>
+                    <p><small class="pull-right">
+                        <a href="http://blog.stermon.com/articles/2016/03/26/fsharp-leftpad">
+                            http://blog.stermon.com/articles/2016/03/26/fsharp-leftpad
+                        </a></small>
+                    </p>
+                </section>
+
+                <section>
+                    <blockquote>
+                     <p>"The owner of LeftPad 1.0.0-alpha1 has unlisted the package. 
+                        This could mean that the package version is deprecated or shouldn't be used anymore."</p>
+                    </blockquote>
+                </section>
+            </section>
+
+            <section id="a-global-view-of-dependencies">
+                <h2>A global view of your dependencies</h2>
+                <section id="where-what-why">
+                    <p>What is used where and by whom?</p>
+                </section>
+
+                <section id="paket-exe-why">
+                    <h2><code>paket.exe why nuget [id]</code></h2>
+                    <pre><code data-trim>
+.paket\paket.exe why nuget Newtonsoft.Json
+
+Paket version 3.30.2
+NuGet Newtonsoft.Json is a direct (paket.dependencies) dependency.
+It's a part of following dependency chains:
+
+-> Bogus
+-> Newtonsoft.Json
+                    </code></pre>
+
+                    <aside class="notes">
+                        <ul>    
+                            <li>unlock details of those complex dependency chains!</li>
+                        </ul>
+                    </aside>
+
+                </section>
+            </section>
+
+
+
+            <section id="paket-resolution">
+                <h2>Package Dependency Resolution</h2>
+                <blockquote cite="https://fsprojects.github.io/Paket/resolver.html">
+                    <p>"Select the latest version for each of the packages in the paket.dependencies file, 
+                        plus all their transitive dependencies, such that all version constraints are satisfied."
+                    </p>
+                </blockquote>
+                <ul>
+                    <li><a href="http://en.wikipedia.org/wiki/Constraint_satisfaction_problem">Constraint Satisfaction Problem</a>
+                        <ul>
+                            <li>Breadth First</li>
+                            <li>Sorting Package Requirements</li>
+                            <li>High Conflict First</li>
+                            <li>Package Conflict Boost</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <aside class="notes">
+                    <a href="https://docs.nuget.org/ndocs/consume-packages/dependency-resolution">Nuget Dependency Resolution rules</a>
+                    <p>Nuget Dependency Resolution Rules 2.7 and previous</p>
+                    <ul>
+                        <li>Highest Patch version</li>
+                    </ul>
+                    <p>Nuget Dependency Resolution Rules 2.8</p>
+                    <ul>
+                        <li>Lowest Patch version</li>
+                    </ul>
+                    <p>NuGet Dependency Resolution Rules 3.x</p>
+                    <ul>
+                        <li>Lowest Applicable version</li>
+                        <li>Floating version</li>
+                        <li>Nearest wins</li>
+                        <li>Cousin Dependencies
+                            <ul>
+                                <li>Equal depth packages, different versions</li>
+                                <li>Lowest version that satisfies</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </aside>
+            </section>
+
+            <section id="converting-an-app">
+                <h2>Converting from NuGet to Paket</h2>
+                <section id="getting-paket" class="text-left">
+                    <p>1. Create <em>.paket</em> dir</p>
+                    <pre><code class="powershell" data-trim>
+mkdir .paket
+cd .paket
+                    </code></pre> 
+                    <p>2. Download <em>paket.bootstrapper.exe</em></p>
+                    <pre><code class="powershell" data-trim>
+$output = "paket.bootstrapper.exe"
+$latestRelease = iwr "https://github.com/fsprojects/Paket/releases/latest"
+$baseUri = $latestRelease.BaseResponse.ResponseUri.AbsoluteUri
+$uri = "$baseUri/$output"
+iwr -Uri $uri -OutFile $output
+                    </code></pre>
+                    <aside class="notes">
+                        <ul>
+                        </ul>
+                    </aside>
+                </section>
+                <section id="bootstrapping" class="text-left">
+                    <p>3. Run the bootstrapper</p>
+                    <pre><code class="powershell" data-trim>
+.paket\paket.bootstrapper.exe
+                    </code></pre>
+                    <p>4. Convert nuget dependencies</p>
+                    <pre><code class="powershell" data-trim>
+.paket\paket.exe convert-from-nuget
+                    </code></pre>
+                    <p>5. Simplify dependencies</p>
+                    <pre><code class="powershell" data-trim>
+.paket\paket.exe simplify
+                    </code></pre>
+                    <p>6. <strong>Profit!</strong></p>
+                </section>
+            </section>
+
+            <section id="codes-compiling">
+                <img src="images/compiling.png" style="width: 80%; height: 80%;" />
+
+                <aside class="notes">
+                    <ul>
+                        <li>Once worked on a solution that had over 300 projects in it. Took 1 hour 15 minutes to compile!</li>
+                        <li>To alleviate this, each developer was issued a high spec server as their dev machine. Brought it down to 45 minutes</li>
+                        <li>Dropping down to command line, manually tweaking parallelization and going through all configuration options, down to 13 minutes</li>
+                    </ul>
+                </aside>
+            </section>
+
+            <section id="introduction-to-fake">
+                <section id="what-is-fake">
+                    <h2>FAKE - F# Make</h2>
+					<img src="images/fake-logo.png" />
+                    <h3>Build automation for .NET</h3>		
+                    <blockquote cite="http://fsharp.github.io/FAKE/">
+                        <p>
+                            ... is a build automation system with capabilities which are similar 
+                            to <strong>make</strong> and <strong>rake.</strong> 
+                            It is using an easy domain-specific language (DSL) 
+                            so that you can start using it <strong>without learning F#.</strong>
+                        </p>
+                    </blockquote>
+                    <aside class="notes">
+                        <ul>
+                        </ul>
+                    </aside>
+                </section>
+            </section>
+
+            <section>
+                <section id="fake-components">
+                    <h2>Main Concepts</h2>
+                    <ul>
+                        <li>Fake.exe</li>
+                        <li>Targets</li>
+                        <li>FileSets</li>
+                        <li>*Helpers</li>
+                    </ul>
+                </section>
+                <section id="fake-exe">
+                    <h3>Install with Paket!</h3>
+                    <p class="text-left">1. Include in paket.dependencies<p>
+                    <pre><code data-trim>
+group build
+    source https://www.nuget.org/api/v2
+    nuget FAKE
+					</code></pre>
+                    <p class="text-left">2. install package</p>
+                    <pre><code data-trim>
+.paket\paket.exe install
+					</code></pre>                    
+                    <p class="text-left">3. set up F# project</p>
+                    <p class="text-left">4. Reference FAKE in F# script</p>
+                    <pre><code class="fsharp" data-trim>
+#r "build/FAKE/tools/FakeLib.dll"
+open Fake 
+					</code></pre>
+                </section>
+
+                <section id="targets">
+                    <h3>Define targets</h3>
+                    <pre><code class="fsharp" data-trim>
+#r "build/FAKE/tools/FakeLib.dll"
+open Fake 
+
+Target "Test" <| fun _ ->
+	trace "Testing stuff..."
+
+Target "Build" <| fun _ ->
+	trace "Building stuff..."
+
+// define the dependencies
+"Test"            
+   ==> "Build"
+
+RunTargetOrDefault "Build"
+                    </code></pre>
+                </section>
+
+                <section id="batch-script">
+                    <h3>Set up a batch script in root</h3>
+                    <pre><code class="batch" data-trim>
+@echo off
+REM build &lt;target&gt;
+
+.paket\paket.bootstrapper.exe
+if errorlevel 1 (
+  exit /b %errorlevel%
+)
+.paket\paket.exe restore
+if errorlevel 1 (
+  exit /b %errorlevel%
+)
+SET TARGET="build"
+SET SCRIPT="build\\scripts\\Targets.fsx"
+IF NOT [%1]==[] (set TARGET="%1")
+ECHO starting build using target=%TARGET%
+"packages\build\FAKE\tools\Fake.exe" "%SCRIPT%" "target=%TARGET%"
+                    </code></pre>
+                </section>
+
+                <section id="target-filesets">
+                    <h3>Include / Exclude files</h3>
+                    <pre><code class="fsharp" data-trim>
+#r "tools/FAKE/FakeLib.dll"
+
+open Fake
+
+let buildDir  = "./build/"
+
+let appReferences  = 
+    !! "src/app/**/*.csproj" 
+      ++ "src/app/**/and-this.fsproj"
+      -- "src/app/**/but-not-this.csproj" 
+
+Target "BuildApp" (fun _ ->
+    MSBuildRelease buildDir "Build" appReferences
+        |> Log "AppBuild-Output: "
+)
+                    </code></pre>                 
+                </section>
+
+                <section id="heaps-of-helpers">
+                    <h3>Heaps of *Helpers!</h3>
+                    <ul>
+                        <li>FileSystem / Environment</li>
+                        <li>MSBuild.exe / dotnet.exe</li>
+                        <li>NUnit / xUnit / SpecFlow</li>
+                        <li>Integrations
+                            <ul>
+                                <li>Slack</li>
+                                <li>TeamCity</li>
+                                <li>Azure Emulator</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+            </section>
+
+            <section id="putting-it-altogether">
+                <h2>Putting it all together</h2>
+                <p><a href="https://github.com/elastic/elasticsearch-net/tree/master/build/scripts">Elasticsearch .NET Client build scripts</a></p>
+            </section>
+
+            <section id="thanks">
+                <h2>Thanks!</h2>
+                <ul>
+                    <li><a href="http://fsprojects.github.io/Paket/">Paket</a>
+                        <ul>
+                            <li><a href="https://github.com/fsprojects/Paket">Github</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="http://fsharp.github.io/FAKE/">FAKE</a>
+                        <ul>
+                            <li><a href="https://github.com/fsharp/FAKE">Github</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            history: true,
+            center: true,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 1.0,
+            slideNumber: 'c/t',
+            transition: 'slide',
+
+            dependencies: [
+                { src: 'lib/js/classList.js', condition: function () { return !document.body.classList; } },
+                { src: 'plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+                { src: 'plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+                { src: 'plugin/highlight/highlight.js', async: true, condition: function () { return !!document.querySelector('pre code'); }, callback: function () { hljs.initHighlightingOnLoad(); } },
+                { src: 'plugin/zoom-js/zoom.js', async: true },
+                { src: 'plugin/notes/notes.js', async: true }
+            ]
+        });
+    </script>
+
+</body>
+</html>
