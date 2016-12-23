@@ -7,3 +7,5 @@ Could the consume, build, and ship process be made simpler? With Paket and Fake 
 Pretty much, Steffen Forkman forked the .Net build ecosystem when he created Paket and Fake. We think forked for the better and in this talk, I'm going to show you why.
 
 [Slides](http://russcam.github.io/paket-fake-talk/#/intro)
+
+[Video](https://www.youtube.com/watch?v=SfOXl0YOu4g)
